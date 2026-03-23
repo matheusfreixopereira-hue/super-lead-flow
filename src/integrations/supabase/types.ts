@@ -14,16 +14,310 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      appointments: {
+        Row: {
+          confirmed: boolean
+          created_at: string
+          date: string
+          duration_minutes: number
+          id: string
+          lead_id: string
+          notes: string | null
+          scheduled_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          confirmed?: boolean
+          created_at?: string
+          date: string
+          duration_minutes?: number
+          id?: string
+          lead_id: string
+          notes?: string | null
+          scheduled_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          confirmed?: boolean
+          created_at?: string
+          date?: string
+          duration_minutes?: number
+          id?: string
+          lead_id?: string
+          notes?: string | null
+          scheduled_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_base: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          franchise: string
+          id: string
+          sort_order: number
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category: string
+          content?: string
+          created_at?: string
+          franchise?: string
+          id?: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          franchise?: string
+          id?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      lead_activities: {
+        Row: {
+          action: string
+          created_at: string
+          from_stage: string | null
+          id: string
+          lead_id: string
+          notes: string | null
+          to_stage: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          from_stage?: string | null
+          id?: string
+          lead_id: string
+          notes?: string | null
+          to_stage?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          from_stage?: string | null
+          id?: string
+          lead_id?: string
+          notes?: string | null
+          to_stage?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_activities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          lead_id: string
+          sender_id: string | null
+          sender_type: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          lead_id: string
+          sender_id?: string | null
+          sender_type?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          lead_id?: string
+          sender_id?: string | null
+          sender_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_messages_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          bant_authority: string | null
+          bant_budget: string | null
+          bant_need: string | null
+          bant_status: string
+          bant_timing: string | null
+          closer_id: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          first_name: string
+          franchise: string
+          id: string
+          is_ai_controlled: boolean
+          last_name: string | null
+          meeting_date: string | null
+          notes: string | null
+          phone: string | null
+          score: number
+          sdr_id: string | null
+          source: string
+          stage: string
+          temperature: string
+          updated_at: string
+        }
+        Insert: {
+          bant_authority?: string | null
+          bant_budget?: string | null
+          bant_need?: string | null
+          bant_status?: string
+          bant_timing?: string | null
+          closer_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          first_name: string
+          franchise?: string
+          id?: string
+          is_ai_controlled?: boolean
+          last_name?: string | null
+          meeting_date?: string | null
+          notes?: string | null
+          phone?: string | null
+          score?: number
+          sdr_id?: string | null
+          source?: string
+          stage?: string
+          temperature?: string
+          updated_at?: string
+        }
+        Update: {
+          bant_authority?: string | null
+          bant_budget?: string | null
+          bant_need?: string | null
+          bant_status?: string
+          bant_timing?: string | null
+          closer_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          first_name?: string
+          franchise?: string
+          id?: string
+          is_ai_controlled?: boolean
+          last_name?: string | null
+          meeting_date?: string | null
+          notes?: string | null
+          phone?: string | null
+          score?: number
+          sdr_id?: string | null
+          source?: string
+          stage?: string
+          temperature?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          active: boolean
+          created_at: string
+          display_name: string
+          email: string
+          id: string
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          display_name: string
+          email: string
+          id?: string
+          role?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          display_name?: string
+          email?: string
+          id?: string
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "supervisor" | "closer" | "sdr"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +444,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "supervisor", "closer", "sdr"],
+    },
   },
 } as const
