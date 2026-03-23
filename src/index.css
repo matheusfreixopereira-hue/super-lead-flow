@@ -6,45 +6,45 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 160 10% 10%;
+    --background: 0 0% 96%;
+    --foreground: 0 0% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 160 10% 10%;
+    --card-foreground: 0 0% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 160 10% 10%;
+    --popover-foreground: 0 0% 10%;
 
-    --primary: 160 84% 39%;
+    --primary: 148 62% 26%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 152 60% 95%;
-    --secondary-foreground: 160 84% 25%;
+    --secondary: 148 30% 94%;
+    --secondary-foreground: 148 62% 20%;
 
-    --muted: 150 10% 94%;
-    --muted-foreground: 160 5% 45%;
+    --muted: 0 0% 93%;
+    --muted-foreground: 0 0% 40%;
 
-    --accent: 152 50% 90%;
-    --accent-foreground: 160 84% 25%;
+    --accent: 148 30% 90%;
+    --accent-foreground: 148 62% 20%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 150 10% 90%;
-    --input: 150 10% 88%;
-    --ring: 160 84% 39%;
+    --border: 0 0% 90%;
+    --input: 0 0% 88%;
+    --ring: 148 62% 26%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 160 84% 25%;
-    --sidebar-foreground: 150 20% 95%;
+    --sidebar-background: 148 62% 26%;
+    --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 160 84% 25%;
-    --sidebar-accent: 160 70% 30%;
+    --sidebar-primary-foreground: 148 62% 26%;
+    --sidebar-accent: 148 50% 32%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 160 60% 32%;
+    --sidebar-border: 148 50% 30%;
     --sidebar-ring: 0 0% 100%;
-    --sidebar-muted: 160 40% 70%;
+    --sidebar-muted: 148 20% 75%;
 
     /* Semantic CRM colors */
     --success: 142 71% 45%;
@@ -59,24 +59,15 @@
     --lead-warm: 38 92% 50%;
     --lead-cold: 210 50% 60%;
 
-    /* Pipeline stage colors */
-    --stage-new: 210 92% 52%;
-    --stage-attending: 38 92% 50%;
-    --stage-qualified: 142 71% 45%;
-    --stage-meeting: 262 83% 58%;
-    --stage-negotiating: 30 95% 55%;
-    --stage-closed: 160 84% 39%;
-    --stage-lost: 0 72% 51%;
-
     /* Font families */
     --font-display: 'Space Grotesk', sans-serif;
     --font-body: 'Inter', sans-serif;
 
     /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(160 10% 10% / 0.04);
-    --shadow-md: 0 4px 6px -1px hsl(160 10% 10% / 0.06), 0 2px 4px -2px hsl(160 10% 10% / 0.04);
-    --shadow-lg: 0 10px 15px -3px hsl(160 10% 10% / 0.08), 0 4px 6px -4px hsl(160 10% 10% / 0.04);
-    --shadow-card: 0 1px 3px 0 hsl(160 10% 10% / 0.06), 0 1px 2px -1px hsl(160 10% 10% / 0.04);
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.04);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.06), 0 2px 4px -2px hsl(0 0% 0% / 0.04);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.08), 0 4px 6px -4px hsl(0 0% 0% / 0.04);
+    --shadow-card: 0 1px 3px 0 hsl(0 0% 0% / 0.06), 0 1px 2px -1px hsl(0 0% 0% / 0.04);
   }
 }
 
@@ -98,7 +89,7 @@
     @apply flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200;
   }
   .sidebar-item-active {
-    @apply bg-sidebar-accent text-sidebar-accent-foreground;
+    @apply bg-sidebar-accent text-sidebar-accent-foreground font-semibold;
   }
   .sidebar-item-inactive {
     @apply text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50;
@@ -107,7 +98,7 @@
     @apply bg-card rounded-xl p-5 border shadow-card;
   }
   .pipeline-column {
-    @apply bg-muted/50 rounded-xl p-3 min-w-[280px] flex flex-col gap-2;
+    @apply bg-muted/50 rounded-xl p-3 min-w-[260px] flex flex-col gap-2;
   }
   .lead-card {
     @apply bg-card rounded-lg p-4 border shadow-sm hover:shadow-md transition-shadow cursor-pointer;

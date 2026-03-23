@@ -1,23 +1,28 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, Users, Kanban, Bot, Building2, CalendarDays, 
-  Settings, ChevronLeft, ChevronRight, Wine
+import {
+  LayoutDashboard, Users, Kanban, Bot, Building2, CalendarDays,
+  ChevronLeft, ChevronRight, Wine, Database, LogOut
 } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-
-const navItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/leads', icon: Users, label: 'Leads' },
-  { to: '/pipeline', icon: Kanban, label: 'Pipeline' },
-  { to: '/sdr', icon: Bot, label: 'SDR IA' },
-  { to: '/franchises', icon: Building2, label: 'Franquias' },
-  { to: '/schedule', icon: CalendarDays, label: 'Agenda' },
-];
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const { role, profile, signOut, canViewMarketing } = useAuth();
+
+  const navItems = [
+    { to: '/', icon: LayoutDashboard, label: 'Dashboard', roles: ['admin', 'supervisor', 'closer', 'sdr'] },
+    { to: '/leads', icon: Users, label: 'Leads', roles: ['admin', 'supervisor', 'closer', 'sdr'] },
+    { to: '/pipeline', icon: Kanban, label: 'Pipeline', roles: ['admin', 'supervisor', 'closer', 'sdr'] },
+    { to: '/sdr', icon: Bot, label: 'SDR IA', roles: ['admin', 'supervisor', 'sdr'] },
+    { to: '/franchises', icon: Building2, label: 'Franquias', roles: ['admin', 'supervisor'] },
+    { to: '/knowledge-base', icon: Database, label: 'Banco de Dados', roles: ['admin', 'supervisor'] },
+    { to: '/schedule', icon: CalendarDays, label: 'Agenda', roles: ['admin', 'supervisor', 'closer', 'sdr'] },
+  ];
+
+  const visibleItems = navItems.filter(item => !role || item.roles.includes(role));
 
   return (
     <motion.aside
@@ -40,8 +45,8 @@ export default function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 py-4 px-3 space-y-1">
-        {navItems.map(item => {
-          const isActive = location.pathname === item.to || 
+        {visibleItems.map(item => {
+          const isActive = location.pathname === item.to ||
             (item.to !== '/' && location.pathname.startsWith(item.to));
           return (
             <NavLink
@@ -56,8 +61,21 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Collapse toggle */}
-      <div className="px-3 pb-4">
+      {/* User info + controls */}
+      <div className="px-3 pb-4 space-y-2">
+        {!collapsed && profile && (
+          <div className="px-4 py-2 text-xs">
+            <p className="text-sidebar-foreground font-medium truncate">{profile.display_name}</p>
+            <p className="text-sidebar-muted capitalize">{role}</p>
+          </div>
+        )}
+        <button
+          onClick={signOut}
+          className="sidebar-item sidebar-item-inactive w-full"
+        >
+          <LogOut className="w-5 h-5 flex-shrink-0" />
+          {!collapsed && <span>Sair</span>}
+        </button>
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="sidebar-item sidebar-item-inactive w-full justify-center"
