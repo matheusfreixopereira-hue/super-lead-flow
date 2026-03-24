@@ -19,6 +19,7 @@ export default function Sidebar() {
     { to: '/sdr', icon: Bot, label: 'SDR IA', roles: ['admin', 'supervisor', 'sdr'] },
     { to: '/franchises', icon: Building2, label: 'Franquias', roles: ['admin', 'supervisor'] },
     { to: '/knowledge-base', icon: Database, label: 'Banco de Dados', roles: ['admin', 'supervisor'] },
+    { to: '/users', icon: UserCog, label: 'Usuários', roles: ['admin', 'supervisor'] },
     { to: '/schedule', icon: CalendarDays, label: 'Agenda', roles: ['admin', 'supervisor', 'closer', 'sdr'] },
   ];
 

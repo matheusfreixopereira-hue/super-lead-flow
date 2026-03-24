@@ -43,6 +43,7 @@ function ProtectedRoutes() {
         <Route path="/sdr" element={<SDRChat />} />
         <Route path="/franchises" element={<Franchises />} />
         <Route path="/knowledge-base" element={<KnowledgeBase />} />
+        <Route path="/users" element={<UserManagement />} />
         <Route path="/schedule" element={<Schedule />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
