@@ -4,8 +4,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Search, Plus, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface LeadRow {
   id: string;
@@ -38,14 +41,19 @@ const STAGE_LABELS: Record<string, string> = {
 export default function Leads() {
   const { user, role } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState('all');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    first_name: '', last_name: '', email: '', phone: '',
+    source: 'marketing', franchise: 'Vinho 24h', stage: 'sdr_received', temperature: 'warm',
+  });
 
-  useEffect(() => {
-    fetchLeads();
-  }, []);
+  useEffect(() => { fetchLeads(); }, []);
 
   const fetchLeads = async () => {
     const { data } = await supabase
@@ -54,6 +62,32 @@ export default function Leads() {
       .order('created_at', { ascending: false });
     if (data) setLeads(data);
     setLoading(false);
+  };
+
+  const handleCreateLead = async () => {
+    setSaving(true);
+    const { error } = await supabase.from('leads').insert({
+      first_name: form.first_name,
+      last_name: form.last_name || null,
+      email: form.email || null,
+      phone: form.phone || null,
+      source: form.source,
+      franchise: form.franchise,
+      stage: form.stage,
+      temperature: form.temperature,
+      created_by: user?.id,
+      sdr_id: role === 'sdr' ? user?.id : null,
+      closer_id: role === 'closer' ? user?.id : null,
+    });
+    if (error) {
+      toast({ title: 'Erro ao criar lead', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Lead criado com sucesso!' });
+      setModalOpen(false);
+      setForm({ first_name: '', last_name: '', email: '', phone: '', source: 'marketing', franchise: 'Vinho 24h', stage: 'sdr_received', temperature: 'warm' });
+      fetchLeads();
+    }
+    setSaving(false);
   };
 
   const filtered = leads.filter(l => {
@@ -78,7 +112,7 @@ export default function Leads() {
           <p className="text-muted-foreground text-sm">{filtered.length} leads encontrados</p>
         </div>
         {(role === 'admin' || role === 'supervisor' || role === 'sdr') && (
-          <Button>
+          <Button onClick={() => setModalOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Novo Lead
           </Button>
@@ -138,6 +172,66 @@ export default function Leads() {
           </tbody>
         </table>
       </div>
+
+      {/* New Lead Modal */}
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Novo Lead</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Nome *</Label>
+                <Input value={form.first_name} onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Sobrenome</Label>
+                <Input value={form.last_name} onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))} />
+              </div>
+            </div>
+            <div>
+              <Label>Email</Label>
+              <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+            </div>
+            <div>
+              <Label>Telefone</Label>
+              <Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="(11) 99999-9999" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Origem</Label>
+                <Select value={form.source} onValueChange={v => setForm(f => ({ ...f, source: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="marketing">Marketing</SelectItem>
+                    <SelectItem value="indicacao">Indicação</SelectItem>
+                    <SelectItem value="outro">Outro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Temperatura</Label>
+                <Select value={form.temperature} onValueChange={v => setForm(f => ({ ...f, temperature: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hot">🔥 Quente</SelectItem>
+                    <SelectItem value="warm">🌤️ Morno</SelectItem>
+                    <SelectItem value="cold">❄️ Frio</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setModalOpen(false)}>Cancelar</Button>
+            <Button onClick={handleCreateLead} disabled={saving || !form.first_name}>
+              {saving && <Loader2 className="w-4 h-4 animate-spin mr-1" />}
+              Criar Lead
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
