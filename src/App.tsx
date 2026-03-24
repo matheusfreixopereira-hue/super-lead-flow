@@ -13,6 +13,7 @@ import SDRChat from "./pages/SDRChat";
 import Franchises from "./pages/Franchises";
 import Schedule from "./pages/Schedule";
 import KnowledgeBase from "./pages/KnowledgeBase";
+import UserManagement from "./pages/UserManagement";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
@@ -42,6 +43,7 @@ function ProtectedRoutes() {
         <Route path="/sdr" element={<SDRChat />} />
         <Route path="/franchises" element={<Franchises />} />
         <Route path="/knowledge-base" element={<KnowledgeBase />} />
+        <Route path="/users" element={<UserManagement />} />
         <Route path="/schedule" element={<Schedule />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
