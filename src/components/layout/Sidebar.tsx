@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Kanban, Bot, Building2, CalendarDays,
-  ChevronLeft, ChevronRight, Wine, Database, LogOut
+  ChevronLeft, ChevronRight, Wine, Database, LogOut, UserCog
 } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
