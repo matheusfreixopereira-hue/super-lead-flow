@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Building2, DollarSign, Target, Users, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Building2, DollarSign, Target, Users, ChevronDown, ChevronUp, Loader2, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 
 interface KBEntry {
   id: string;
@@ -10,13 +16,16 @@ interface KBEntry {
 }
 
 export default function Franchises() {
+  const { role } = useAuth();
+  const { toast } = useToast();
   const [entries, setEntries] = useState<KBEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [form, setForm] = useState({ title: '', category: 'descricao', content: '' });
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    fetchEntries();
-  }, []);
+  useEffect(() => { fetchEntries(); }, []);
 
   const fetchEntries = async () => {
     const { data } = await supabase
@@ -25,6 +34,25 @@ export default function Franchises() {
       .order('sort_order');
     if (data) setEntries(data);
     setLoading(false);
+  };
+
+  const handleAddCompany = async () => {
+    if (!form.title.trim()) return;
+    setSaving(true);
+    const { error } = await supabase.from('knowledge_base').insert({
+      title: form.title,
+      category: form.category,
+      content: form.content,
+    });
+    if (error) {
+      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Empresa adicionada!' });
+      setAddModalOpen(false);
+      setForm({ title: '', category: 'descricao', content: '' });
+      fetchEntries();
+    }
+    setSaving(false);
   };
 
   if (loading) {
@@ -44,9 +72,17 @@ export default function Franchises() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-display font-bold text-foreground">Franquias</h1>
-        <p className="text-muted-foreground text-sm">Informações sobre Vinho 24h</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-display font-bold text-foreground">Minhas Empresas</h1>
+          <p className="text-muted-foreground text-sm">Gerencie suas empresas cadastradas</p>
+        </div>
+        {role === 'admin' && (
+          <Button onClick={() => setAddModalOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Adicionar Empresa
+          </Button>
+        )}
       </div>
 
       <div className="space-y-3">
@@ -76,6 +112,31 @@ export default function Franchises() {
           );
         })}
       </div>
+
+      <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Adicionar Empresa</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Nome da Empresa *</Label>
+              <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Ex: Minha Empresa" />
+            </div>
+            <div>
+              <Label>Descrição</Label>
+              <Input value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} placeholder="Breve descrição da empresa" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddModalOpen(false)}>Cancelar</Button>
+            <Button onClick={handleAddCompany} disabled={saving || !form.title.trim()}>
+              {saving && <Loader2 className="w-4 h-4 animate-spin mr-1" />}
+              Adicionar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

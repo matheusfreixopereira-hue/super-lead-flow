@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Search, Plus, Loader2 } from 'lucide-react';
+import { Search, Plus, Loader2, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface LeadRow {
@@ -22,6 +22,12 @@ interface LeadRow {
   temperature: string;
   score: number;
   created_at: string;
+}
+
+interface Profile {
+  user_id: string;
+  display_name: string;
+  role: string;
 }
 
 const STAGE_LABELS: Record<string, string> = {
@@ -53,7 +59,14 @@ export default function Leads() {
     source: 'marketing', franchise: 'Vinho 24h', stage: 'sdr_received', temperature: 'warm',
   });
 
-  useEffect(() => { fetchLeads(); }, []);
+  // Move lead state
+  const [moveModalOpen, setMoveModalOpen] = useState(false);
+  const [moveLeadId, setMoveLeadId] = useState<string | null>(null);
+  const [moveStage, setMoveStage] = useState('closer_received');
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [assignTo, setAssignTo] = useState('');
+
+  useEffect(() => { fetchLeads(); fetchProfiles(); }, []);
 
   const fetchLeads = async () => {
     const { data } = await supabase
@@ -62,6 +75,11 @@ export default function Leads() {
       .order('created_at', { ascending: false });
     if (data) setLeads(data);
     setLoading(false);
+  };
+
+  const fetchProfiles = async () => {
+    const { data } = await supabase.from('profiles').select('user_id, display_name, role');
+    if (data) setProfiles(data);
   };
 
   const handleCreateLead = async () => {
@@ -88,6 +106,31 @@ export default function Leads() {
       fetchLeads();
     }
     setSaving(false);
+  };
+
+  const handleMoveLead = async () => {
+    if (!moveLeadId) return;
+    const updates: Record<string, string | null> = { stage: moveStage };
+    if (assignTo && assignTo !== 'none') {
+      const targetProfile = profiles.find(p => p.user_id === assignTo);
+      if (targetProfile?.role === 'closer') updates.closer_id = assignTo;
+      if (targetProfile?.role === 'sdr') updates.sdr_id = assignTo;
+    }
+    const { error } = await supabase.from('leads').update(updates).eq('id', moveLeadId);
+    if (error) {
+      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Lead movido com sucesso!' });
+      setMoveModalOpen(false);
+      setMoveLeadId(null);
+      fetchLeads();
+    }
+  };
+
+  const openMoveModal = (leadId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMoveLeadId(leadId);
+    setMoveModalOpen(true);
   };
 
   const filtered = leads.filter(l => {
@@ -147,7 +190,7 @@ export default function Leads() {
               <th className="text-left px-4 py-3 font-medium text-muted-foreground">Origem</th>
               <th className="text-left px-4 py-3 font-medium text-muted-foreground">Etapa</th>
               <th className="text-left px-4 py-3 font-medium text-muted-foreground">Temp.</th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">Score</th>
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -163,7 +206,12 @@ export default function Leads() {
                     {lead.temperature === 'hot' ? '🔥 Quente' : lead.temperature === 'warm' ? '🌤️ Morno' : '❄️ Frio'}
                   </span>
                 </td>
-                <td className="px-4 py-3 font-medium">{lead.score}</td>
+                <td className="px-4 py-3">
+                  <Button variant="ghost" size="sm" onClick={(e) => openMoveModal(lead.id, e)}>
+                    <ArrowRight className="w-4 h-4 mr-1" />
+                    Mover
+                  </Button>
+                </td>
               </tr>
             ))}
             {filtered.length === 0 && (
@@ -229,6 +277,46 @@ export default function Leads() {
               {saving && <Loader2 className="w-4 h-4 animate-spin mr-1" />}
               Criar Lead
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Move Lead Modal */}
+      <Dialog open={moveModalOpen} onOpenChange={setMoveModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Mover Lead</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Nova etapa</Label>
+              <Select value={moveStage} onValueChange={setMoveStage}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(STAGE_LABELS).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Atribuir a (opcional)</Label>
+              <Select value={assignTo} onValueChange={setAssignTo}>
+                <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum</SelectItem>
+                  {profiles.filter(p => ['sdr', 'closer'].includes(p.role)).map(p => (
+                    <SelectItem key={p.user_id} value={p.user_id}>
+                      {p.display_name} ({p.role.toUpperCase()})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMoveModalOpen(false)}>Cancelar</Button>
+            <Button onClick={handleMoveLead}>Mover</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

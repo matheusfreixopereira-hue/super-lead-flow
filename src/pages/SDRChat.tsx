@@ -1,12 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Bot, Send, User, Loader2, ArrowRight, Users } from 'lucide-react';
+import { Bot, Send, User, Loader2, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 
 interface LeadRow {
@@ -24,11 +21,6 @@ interface MessageRow {
   created_at: string;
 }
 
-interface Profile {
-  user_id: string;
-  display_name: string;
-  role: string;
-}
 
 const STAGE_LABELS: Record<string, string> = {
   sdr_received: 'Leads Recebidos (SDR)',
@@ -36,11 +28,6 @@ const STAGE_LABELS: Record<string, string> = {
   sdr_meeting_done: 'Fizeram Reunião',
   sdr_disqualified: 'Desqualificados (SDR)',
   sdr_no_show: 'No Show',
-  closer_received: 'Leads Recebidos (Closer)',
-  closer_meeting_done: 'Fizeram Reunião (Closer)',
-  closer_contract_sent: 'Receberam Contrato',
-  closer_closed: 'Fecharam',
-  closer_disqualified: 'Desqualificados (Closer)',
 };
 
 export default function SDRChat() {
@@ -51,13 +38,9 @@ export default function SDRChat() {
   const [messages, setMessages] = useState<MessageRow[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
-  const [moveModalOpen, setMoveModalOpen] = useState(false);
-  const [moveStage, setMoveStage] = useState('closer_received');
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [assignTo, setAssignTo] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { fetchLeads(); fetchProfiles(); }, []);
+  useEffect(() => { fetchLeads(); }, []);
   useEffect(() => { if (selectedLeadId) fetchMessages(); }, [selectedLeadId]);
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
@@ -73,10 +56,6 @@ export default function SDRChat() {
     setLoading(false);
   };
 
-  const fetchProfiles = async () => {
-    const { data } = await supabase.from('profiles').select('user_id, display_name, role');
-    if (data) setProfiles(data);
-  };
 
   const fetchMessages = async () => {
     const { data } = await supabase
@@ -111,23 +90,6 @@ export default function SDRChat() {
     fetchMessages();
   };
 
-  const handleMoveLead = async () => {
-    if (!selectedLeadId) return;
-    const updates: Record<string, string | null> = { stage: moveStage };
-    if (assignTo) {
-      const targetProfile = profiles.find(p => p.user_id === assignTo);
-      if (targetProfile?.role === 'closer') updates.closer_id = assignTo;
-      if (targetProfile?.role === 'sdr') updates.sdr_id = assignTo;
-    }
-    const { error } = await supabase.from('leads').update(updates).eq('id', selectedLeadId);
-    if (error) {
-      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Lead movido com sucesso!' });
-      setMoveModalOpen(false);
-      fetchLeads();
-    }
-  };
 
   const selectedLead = leads.find(l => l.id === selectedLeadId);
 
@@ -184,12 +146,6 @@ export default function SDRChat() {
               </p>
             )}
           </div>
-          {selectedLeadId && (
-            <Button variant="outline" onClick={() => setMoveModalOpen(true)}>
-              <ArrowRight className="w-4 h-4 mr-2" />
-              Mover Lead
-            </Button>
-          )}
         </div>
 
         <div className="flex-1 bg-card rounded-xl border shadow-sm flex flex-col overflow-hidden">
@@ -230,45 +186,6 @@ export default function SDRChat() {
         </div>
       </div>
 
-      {/* Move Lead Modal */}
-      <Dialog open={moveModalOpen} onOpenChange={setMoveModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Mover Lead</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>Nova etapa</Label>
-              <Select value={moveStage} onValueChange={setMoveStage}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(STAGE_LABELS).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Atribuir a (opcional)</Label>
-              <Select value={assignTo} onValueChange={setAssignTo}>
-                <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Nenhum</SelectItem>
-                  {profiles.filter(p => ['sdr', 'closer'].includes(p.role)).map(p => (
-                    <SelectItem key={p.user_id} value={p.user_id}>
-                      {p.display_name} ({p.role.toUpperCase()})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setMoveModalOpen(false)}>Cancelar</Button>
-            <Button onClick={handleMoveLead}>Mover</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

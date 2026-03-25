@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Kanban, Bot, Building2, CalendarDays,
-  ChevronLeft, ChevronRight, Wine, Database, LogOut, UserCog
+  ChevronLeft, ChevronRight, Zap, Database, LogOut, UserCog
 } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -17,7 +17,7 @@ export default function Sidebar() {
     { to: '/leads', icon: Users, label: 'Leads', roles: ['admin', 'supervisor', 'closer', 'sdr'] },
     { to: '/pipeline', icon: Kanban, label: 'Pipeline', roles: ['admin', 'supervisor', 'closer', 'sdr'] },
     { to: '/sdr', icon: Bot, label: 'SDR IA', roles: ['admin', 'supervisor', 'sdr'] },
-    { to: '/franchises', icon: Building2, label: 'Franquias', roles: ['admin', 'supervisor'] },
+    { to: '/franchises', icon: Building2, label: 'Minhas Empresas', roles: ['admin', 'supervisor'] },
     { to: '/knowledge-base', icon: Database, label: 'Banco de Dados', roles: ['admin', 'supervisor'] },
     { to: '/users', icon: UserCog, label: 'Usuários', roles: ['admin', 'supervisor'] },
     { to: '/schedule', icon: CalendarDays, label: 'Agenda', roles: ['admin', 'supervisor', 'closer', 'sdr'] },
@@ -34,12 +34,12 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-sidebar-border">
         <div className="w-9 h-9 rounded-lg bg-sidebar-primary flex items-center justify-center flex-shrink-0">
-          <Wine className="w-5 h-5 text-sidebar-primary-foreground" />
+          <Zap className="w-5 h-5 text-sidebar-primary-foreground" />
         </div>
         {!collapsed && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="overflow-hidden">
-            <h1 className="text-sidebar-foreground font-display font-bold text-lg leading-tight">SUPER</h1>
-            <p className="text-sidebar-muted text-xs font-medium -mt-0.5">FRANQUIAS</p>
+            <h1 className="text-sidebar-foreground font-display font-bold text-lg leading-tight">FREIXO</h1>
+            <p className="text-sidebar-muted text-xs font-medium -mt-0.5">CRM</p>
           </motion.div>
         )}
       </div>
