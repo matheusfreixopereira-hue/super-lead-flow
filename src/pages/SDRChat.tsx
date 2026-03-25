@@ -48,7 +48,7 @@ export default function SDRChat() {
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { fetchLeads(); fetchProfiles(); }, []);
+  useEffect(() => { fetchLeads(); }, []);
   useEffect(() => { if (selectedLeadId) fetchMessages(); }, [selectedLeadId]);
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
