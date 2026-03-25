@@ -32,9 +32,9 @@ export default function Login() {
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
             <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mb-4">
-              <Wine className="w-8 h-8 text-primary-foreground" />
+              <Zap className="w-8 h-8 text-primary-foreground" />
             </div>
-            <h1 className="text-2xl font-display font-bold text-foreground">SUPER FRANQUIAS</h1>
+            <h1 className="text-2xl font-display font-bold text-foreground">FREIXO CRM</h1>
             <p className="text-muted-foreground text-sm mt-1">Acesse sua conta</p>
           </div>
 

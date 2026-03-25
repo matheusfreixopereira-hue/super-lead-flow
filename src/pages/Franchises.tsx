@@ -44,9 +44,17 @@ export default function Franchises() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-display font-bold text-foreground">Franquias</h1>
-        <p className="text-muted-foreground text-sm">Informações sobre Vinho 24h</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-display font-bold text-foreground">Minhas Empresas</h1>
+          <p className="text-muted-foreground text-sm">Gerencie suas empresas cadastradas</p>
+        </div>
+        {role === 'admin' && (
+          <Button onClick={() => setAddModalOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Adicionar Empresa
+          </Button>
+        )}
       </div>
 
       <div className="space-y-3">

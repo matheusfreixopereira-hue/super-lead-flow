@@ -15,36 +15,36 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 10%;
 
-    --primary: 148 62% 26%;
+    --primary: 262 80% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 148 30% 94%;
-    --secondary-foreground: 148 62% 20%;
+    --secondary: 262 30% 95%;
+    --secondary-foreground: 262 80% 35%;
 
     --muted: 0 0% 93%;
     --muted-foreground: 0 0% 40%;
 
-    --accent: 148 30% 90%;
-    --accent-foreground: 148 62% 20%;
+    --accent: 262 30% 92%;
+    --accent-foreground: 262 80% 35%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 0 0% 90%;
     --input: 0 0% 88%;
-    --ring: 148 62% 26%;
+    --ring: 262 80% 50%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 148 62% 26%;
+    --sidebar-background: 262 80% 50%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 148 62% 26%;
-    --sidebar-accent: 148 50% 32%;
+    --sidebar-primary-foreground: 262 80% 50%;
+    --sidebar-accent: 262 70% 58%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 148 50% 30%;
+    --sidebar-border: 262 70% 45%;
     --sidebar-ring: 0 0% 100%;
-    --sidebar-muted: 148 20% 75%;
+    --sidebar-muted: 262 20% 75%;
 
     /* Semantic CRM colors */
     --success: 142 71% 45%;
