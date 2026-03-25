@@ -191,45 +191,6 @@ export default function SDRChat() {
         </div>
       </div>
 
-      {/* Move Lead Modal */}
-      <Dialog open={moveModalOpen} onOpenChange={setMoveModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Mover Lead</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>Nova etapa</Label>
-              <Select value={moveStage} onValueChange={setMoveStage}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(STAGE_LABELS).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Atribuir a (opcional)</Label>
-              <Select value={assignTo} onValueChange={setAssignTo}>
-                <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Nenhum</SelectItem>
-                  {profiles.filter(p => ['sdr', 'closer'].includes(p.role)).map(p => (
-                    <SelectItem key={p.user_id} value={p.user_id}>
-                      {p.display_name} ({p.role.toUpperCase()})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setMoveModalOpen(false)}>Cancelar</Button>
-            <Button onClick={handleMoveLead}>Mover</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
