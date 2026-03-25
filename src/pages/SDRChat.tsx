@@ -21,11 +21,6 @@ interface MessageRow {
   created_at: string;
 }
 
-interface Profile {
-  user_id: string;
-  display_name: string;
-  role: string;
-}
 
 const STAGE_LABELS: Record<string, string> = {
   sdr_received: 'Leads Recebidos (SDR)',
