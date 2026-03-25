@@ -95,23 +95,6 @@ export default function SDRChat() {
     fetchMessages();
   };
 
-  const handleMoveLead = async () => {
-    if (!selectedLeadId) return;
-    const updates: Record<string, string | null> = { stage: moveStage };
-    if (assignTo) {
-      const targetProfile = profiles.find(p => p.user_id === assignTo);
-      if (targetProfile?.role === 'closer') updates.closer_id = assignTo;
-      if (targetProfile?.role === 'sdr') updates.sdr_id = assignTo;
-    }
-    const { error } = await supabase.from('leads').update(updates).eq('id', selectedLeadId);
-    if (error) {
-      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Lead movido com sucesso!' });
-      setMoveModalOpen(false);
-      fetchLeads();
-    }
-  };
 
   const selectedLead = leads.find(l => l.id === selectedLeadId);
 
