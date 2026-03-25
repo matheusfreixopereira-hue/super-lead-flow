@@ -61,10 +61,6 @@ export default function SDRChat() {
     setLoading(false);
   };
 
-  const fetchProfiles = async () => {
-    const { data } = await supabase.from('profiles').select('user_id, display_name, role');
-    if (data) setProfiles(data);
-  };
 
   const fetchMessages = async () => {
     const { data } = await supabase
