@@ -46,10 +46,6 @@ export default function SDRChat() {
   const [messages, setMessages] = useState<MessageRow[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
-  const [moveModalOpen, setMoveModalOpen] = useState(false);
-  const [moveStage, setMoveStage] = useState('closer_received');
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [assignTo, setAssignTo] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { fetchLeads(); fetchProfiles(); }, []);
