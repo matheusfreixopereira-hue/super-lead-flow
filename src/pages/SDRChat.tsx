@@ -151,12 +151,6 @@ export default function SDRChat() {
               </p>
             )}
           </div>
-          {selectedLeadId && (
-            <Button variant="outline" onClick={() => setMoveModalOpen(true)}>
-              <ArrowRight className="w-4 h-4 mr-2" />
-              Mover Lead
-            </Button>
-          )}
         </div>
 
         <div className="flex-1 bg-card rounded-xl border shadow-sm flex flex-col overflow-hidden">
