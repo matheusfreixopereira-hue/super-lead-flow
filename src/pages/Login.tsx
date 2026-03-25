@@ -73,14 +73,6 @@ export default function Login() {
             </Button>
           </form>
 
-          <div className="mt-6 pt-4 border-t">
-            <p className="text-xs text-muted-foreground text-center">
-              Usuários de teste: admin, supervisor, gabivinho24h, freixovinho24h
-            </p>
-            <p className="text-xs text-muted-foreground text-center mt-1">
-              Senha padrão: @superfranquias2026
-            </p>
-          </div>
         </div>
       </div>
     </div>
