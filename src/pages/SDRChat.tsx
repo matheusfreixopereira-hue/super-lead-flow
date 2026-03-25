@@ -36,11 +36,6 @@ const STAGE_LABELS: Record<string, string> = {
   sdr_meeting_done: 'Fizeram Reunião',
   sdr_disqualified: 'Desqualificados (SDR)',
   sdr_no_show: 'No Show',
-  closer_received: 'Leads Recebidos (Closer)',
-  closer_meeting_done: 'Fizeram Reunião (Closer)',
-  closer_contract_sent: 'Receberam Contrato',
-  closer_closed: 'Fecharam',
-  closer_disqualified: 'Desqualificados (Closer)',
 };
 
 export default function SDRChat() {
