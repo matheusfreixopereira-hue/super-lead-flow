@@ -5,6 +5,7 @@ import { Bot, Send, User, Loader2, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import ReactMarkdown from 'react-markdown';
 
 interface LeadRow {
   id: string;
@@ -20,7 +21,6 @@ interface MessageRow {
   sender_type: string;
   created_at: string;
 }
-
 
 const STAGE_LABELS: Record<string, string> = {
   sdr_received: 'Leads Recebidos (SDR)',
@@ -38,6 +38,7 @@ export default function SDRChat() {
   const [messages, setMessages] = useState<MessageRow[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { fetchLeads(); }, []);
@@ -56,7 +57,6 @@ export default function SDRChat() {
     setLoading(false);
   };
 
-
   const fetchMessages = async () => {
     const { data } = await supabase
       .from('lead_messages')
@@ -67,29 +67,54 @@ export default function SDRChat() {
   };
 
   const sendMessage = async () => {
-    if (!input.trim() || !selectedLeadId) return;
+    if (!input.trim() || !selectedLeadId || sending) return;
     const msg = input.trim();
     setInput('');
+    setSending(true);
 
+    // Save user message
     await supabase.from('lead_messages').insert({
       lead_id: selectedLeadId,
       content: msg,
       sender_type: 'human',
       sender_id: user?.id,
     });
+    await fetchMessages();
 
-    setTimeout(async () => {
+    // Build conversation history for AI
+    const history = [...messages, { id: '', content: msg, sender_type: 'human', created_at: '' }]
+      .map(m => ({
+        role: m.sender_type === 'ai' ? 'assistant' as const : 'user' as const,
+        content: m.content,
+      }));
+
+    try {
+      const { data, error } = await supabase.functions.invoke('sdr-chat', {
+        body: { messages: history, lead_id: selectedLeadId },
+      });
+
+      if (error) throw error;
+
+      const reply = data?.reply || 'Desculpe, não consegui processar sua mensagem.';
+
       await supabase.from('lead_messages').insert({
         lead_id: selectedLeadId,
-        content: 'Obrigado pela informação! Vou analisar e retorno em breve. 🤖',
+        content: reply,
         sender_type: 'ai',
       });
-      fetchMessages();
-    }, 1000);
+    } catch (err: any) {
+      console.error('SDR Chat error:', err);
+      toast({ title: 'Erro na IA', description: err.message || 'Tente novamente.', variant: 'destructive' });
+      await supabase.from('lead_messages').insert({
+        lead_id: selectedLeadId,
+        content: 'Desculpe, ocorreu um erro ao processar sua mensagem. Tente novamente.',
+        sender_type: 'ai',
+      });
+    }
 
-    fetchMessages();
+    await fetchMessages();
+    setSending(false);
   };
-
 
   const selectedLead = leads.find(l => l.id === selectedLeadId);
 
@@ -136,7 +161,6 @@ export default function SDRChat() {
 
       {/* Right: chat */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
         <div className="flex items-center justify-between mb-3">
           <div>
             <h1 className="text-2xl font-display font-bold text-foreground">SDR IA</h1>
@@ -152,7 +176,7 @@ export default function SDRChat() {
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.length === 0 && (
               <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                {selectedLeadId ? 'Nenhuma mensagem ainda' : 'Selecione um lead para iniciar'}
+                {selectedLeadId ? 'Nenhuma mensagem ainda. Envie uma mensagem para iniciar!' : 'Selecione um lead para iniciar'}
               </div>
             )}
             {messages.map(msg => (
@@ -164,10 +188,22 @@ export default function SDRChat() {
                       {new Date(msg.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
-                  <p className="text-sm">{msg.content}</p>
+                  {msg.sender_type === 'ai' ? (
+                    <div className="text-sm prose prose-sm max-w-none">
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <p className="text-sm">{msg.content}</p>
+                  )}
                 </div>
               </div>
             ))}
+            {sending && (
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>IA está pensando...</span>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
 
@@ -177,15 +213,14 @@ export default function SDRChat() {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Digite uma mensagem..."
               onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-              disabled={!selectedLeadId}
+              disabled={!selectedLeadId || sending}
             />
-            <Button onClick={sendMessage} disabled={!selectedLeadId || !input.trim()}>
+            <Button onClick={sendMessage} disabled={!selectedLeadId || !input.trim() || sending}>
               <Send className="w-4 h-4" />
             </Button>
           </div>
         </div>
       </div>
-
     </div>
   );
 }
