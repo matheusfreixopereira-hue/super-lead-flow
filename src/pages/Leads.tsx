@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Search, Plus, Loader2, ArrowRight } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Search, Plus, Loader2, ArrowRight, Trash2, Pencil } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface LeadRow {
@@ -65,6 +66,14 @@ export default function Leads() {
   const [moveStage, setMoveStage] = useState('closer_received');
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [assignTo, setAssignTo] = useState('');
+
+  // Edit lead state
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ id: '', first_name: '', last_name: '', email: '', phone: '' });
+
+  // Delete lead state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteLeadId, setDeleteLeadId] = useState<string | null>(null);
 
   useEffect(() => { fetchLeads(); fetchProfiles(); }, []);
 
@@ -131,6 +140,55 @@ export default function Leads() {
     e.stopPropagation();
     setMoveLeadId(leadId);
     setMoveModalOpen(true);
+  };
+
+  const openEditModal = (lead: LeadRow, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditForm({
+      id: lead.id,
+      first_name: lead.first_name,
+      last_name: lead.last_name || '',
+      email: lead.email || '',
+      phone: lead.phone || '',
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleEditLead = async () => {
+    setSaving(true);
+    const { error } = await supabase.from('leads').update({
+      first_name: editForm.first_name,
+      last_name: editForm.last_name || null,
+      email: editForm.email || null,
+      phone: editForm.phone || null,
+    }).eq('id', editForm.id);
+    if (error) {
+      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Lead atualizado!' });
+      setEditModalOpen(false);
+      fetchLeads();
+    }
+    setSaving(false);
+  };
+
+  const openDeleteDialog = (leadId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDeleteLeadId(leadId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteLead = async () => {
+    if (!deleteLeadId) return;
+    const { error } = await supabase.from('leads').delete().eq('id', deleteLeadId);
+    if (error) {
+      toast({ title: 'Erro ao excluir', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Lead excluído com sucesso!' });
+      fetchLeads();
+    }
+    setDeleteDialogOpen(false);
+    setDeleteLeadId(null);
   };
 
   const filtered = leads.filter(l => {
@@ -207,10 +265,17 @@ export default function Leads() {
                   </span>
                 </td>
                 <td className="px-4 py-3">
-                  <Button variant="ghost" size="sm" onClick={(e) => openMoveModal(lead.id, e)}>
-                    <ArrowRight className="w-4 h-4 mr-1" />
-                    Mover
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="sm" onClick={(e) => openEditModal(lead, e)} title="Editar">
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={(e) => openDeleteDialog(lead.id, e)} title="Excluir" className="text-destructive hover:text-destructive">
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={(e) => openMoveModal(lead.id, e)} title="Mover">
+                      <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -226,6 +291,7 @@ export default function Leads() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Novo Lead</DialogTitle>
+            <DialogDescription>Preencha os dados do novo lead</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
@@ -281,11 +347,49 @@ export default function Leads() {
         </DialogContent>
       </Dialog>
 
+      {/* Edit Lead Modal */}
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Lead</DialogTitle>
+            <DialogDescription>Altere os dados do lead</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Nome *</Label>
+                <Input value={editForm.first_name} onChange={e => setEditForm(f => ({ ...f, first_name: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Sobrenome</Label>
+                <Input value={editForm.last_name} onChange={e => setEditForm(f => ({ ...f, last_name: e.target.value }))} />
+              </div>
+            </div>
+            <div>
+              <Label>Email</Label>
+              <Input type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} />
+            </div>
+            <div>
+              <Label>Telefone</Label>
+              <Input value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} placeholder="(11) 99999-9999" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditModalOpen(false)}>Cancelar</Button>
+            <Button onClick={handleEditLead} disabled={saving || !editForm.first_name}>
+              {saving && <Loader2 className="w-4 h-4 animate-spin mr-1" />}
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Move Lead Modal */}
       <Dialog open={moveModalOpen} onOpenChange={setMoveModalOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Mover Lead</DialogTitle>
+            <DialogDescription>Selecione a nova etapa do lead</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -320,6 +424,24 @@ export default function Leads() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Lead</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este lead? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteLead} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
