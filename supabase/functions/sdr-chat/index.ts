@@ -52,10 +52,15 @@ FLUXO DE ATENDIMENTO (siga naturalmente, não de forma mecânica):
 
 1. ABERTURA: Se apresente brevemente, mencione que viu o interesse na Vinho 24h, pergunte se pode explicar como funciona.
 
-2. APRESENTAÇÃO: Se o lead aceitar, envie os links de material:
-   📎 Apresentação: https://vinho24h.com.br/wp-content/uploads/2025/02/Apresentacao-Vinho24h-5.pdf
-   📎 COF: https://vinho24h.com.br/cof2025
-   Explique brevemente: "A Vinho 24h é uma adega autônoma dentro de condomínios, sem funcionários, funcionando 24h. Modelo enxuto, operação simples e alta demanda."
+2. APRESENTAÇÃO: Se o lead aceitar, envie os links de material formatados assim (EXATAMENTE neste formato, cada link em sua própria linha):
+
+📎 **Apresentação:**
+https://vinho24h.com.br/wp-content/uploads/2025/02/Apresentacao-Vinho24h-5.pdf
+
+📎 **COF (Circular de Oferta de Franquia):**
+https://vinho24h.com.br/cof2025
+
+Depois explique brevemente: "A Vinho 24h é uma adega autônoma dentro de condomínios, sem funcionários, funcionando 24h. Modelo enxuto, operação simples e alta demanda."
 
 3. QUEBRA DE GELO: Pergunte por onde conheceu a Vinho 24h.
 
@@ -73,6 +78,10 @@ FLUXO DE ATENDIMENTO (siga naturalmente, não de forma mecânica):
 
 7. PÓS-AGENDAMENTO: Confirme que receberá confirmação por e-mail, coloque-se à disposição.
 
+REDES SOCIAIS (quando o lead perguntar):
+- Instagram da Vinho 24h: https://www.instagram.com/vinho24h/
+- Instagram do nosso CO (Rafael): https://www.instagram.com/rafasuper
+
 INTELIGÊNCIA ADAPTATIVA:
 - "Só estou olhando" → nutrir + manter conversa leve
 - "Sem dinheiro agora" → marcar como futuro + educar sobre o modelo
@@ -87,6 +96,19 @@ REGRAS ABSOLUTAS:
 - Evite qualquer tipo de pressão
 - Se não souber algo, diga "vou confirmar com meu time e te retorno"
 - Adapte a conversa conforme as respostas do lead
+
+EXTRAÇÃO DE BANT (OBRIGATÓRIO):
+Ao final de CADA resposta, você DEVE adicionar um bloco JSON oculto com a análise BANT atualizada baseada na conversa inteira. Use EXATAMENTE este formato na última linha da sua resposta:
+<!--BANT:{"budget":"valor ou null","authority":"valor ou null","need":"valor ou null","timing":"valor ou null","status":"pending|partial|qualified"}-->
+
+Regras para o bloco BANT:
+- budget: o que o lead disse sobre orçamento (ex: "100k", "tem capital", "não tem agora") ou null se não mencionou
+- authority: quem decide (ex: "decide sozinho", "com esposa", "com sócio") ou null se não mencionou
+- need: motivação/dor (ex: "renda extra", "sair do CLT", "investir") ou null se não mencionou
+- timing: quando quer começar (ex: "imediato", "3 meses", "só analisando") ou null se não mencionou
+- status: "pending" se nenhum critério foi respondido, "partial" se alguns foram, "qualified" se todos 4 foram respondidos positivamente
+- Use os valores que o lead REALMENTE disse na conversa
+- Mantenha valores de mensagens anteriores se o lead já respondeu antes
 
 BASE DE CONHECIMENTO (use quando o lead perguntar sobre o negócio):
 ${knowledgeContext || "Nenhum conteúdo cadastrado ainda."}
@@ -124,7 +146,31 @@ ${leadContext}`;
     }
 
     const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || "Desculpe, não consegui gerar uma resposta.";
+    let reply = data.choices?.[0]?.message?.content || "Desculpe, não consegui gerar uma resposta.";
+
+    // Extract BANT data from hidden block
+    const bantMatch = reply.match(/<!--BANT:(.*?)-->/);
+    if (bantMatch && lead_id) {
+      try {
+        const bantData = JSON.parse(bantMatch[1]);
+        const updateFields: Record<string, string> = {};
+        
+        if (bantData.budget) updateFields.bant_budget = bantData.budget;
+        if (bantData.authority) updateFields.bant_authority = bantData.authority;
+        if (bantData.need) updateFields.bant_need = bantData.need;
+        if (bantData.timing) updateFields.bant_timing = bantData.timing;
+        if (bantData.status) updateFields.bant_status = bantData.status;
+        
+        if (Object.keys(updateFields).length > 0) {
+          await supabase.from("leads").update(updateFields).eq("id", lead_id);
+        }
+      } catch (e) {
+        console.error("Failed to parse BANT data:", e);
+      }
+      
+      // Remove the hidden BANT block from the reply shown to user
+      reply = reply.replace(/<!--BANT:.*?-->/g, "").trim();
+    }
 
     return new Response(JSON.stringify({ reply }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
